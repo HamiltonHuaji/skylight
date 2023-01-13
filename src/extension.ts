@@ -16,7 +16,7 @@ function checkIlluminance(sensor: LightSensor) {
 
 let interval: number = 1000;
 let sensor = LightSensor.getDefault();
-let handler: number | null = null;
+let handler: NodeJS.Timer | null = null;
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -29,18 +29,18 @@ export function activate(context: vscode.ExtensionContext) {
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with registerCommand
     // The commandId parameter must match the command field in package.json
-    const activeCommandId = 'skylight.active';
-    const deactiveCommandId = 'skylight.deactive';
+    const activateCommandId = 'skylight.activate';
+    const deactivateCommandId = 'skylight.deactivate';
     const toggleCommandId = 'skylight.toggle';
 
-    let activateCommand = vscode.commands.registerCommand(activeCommandId, () => {
+    let activateCommand = vscode.commands.registerCommand(activateCommandId, () => {
         // The code you place here will be executed every time your command is executed
         // Display a message box to the user
         handler = setInterval(() => {
             checkIlluminance(sensor);
-        }, 1000);
+        }, interval);
     });
-    let deactivateCommand = vscode.commands.registerCommand(deactiveCommandId, () => {
+    let deactivateCommand = vscode.commands.registerCommand(deactivateCommandId, () => {
         // The code you place here will be executed every time your command is executed
         // Display a message box to the user
         if (handler !== null) {
@@ -57,7 +57,7 @@ export function activate(context: vscode.ExtensionContext) {
         } else {
             handler = setInterval(() => {
                 checkIlluminance(sensor);
-            }, 1000);
+            }, interval);
         }
     });
 

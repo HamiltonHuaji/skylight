@@ -10,14 +10,22 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:skylight.helloWorld"
+    "onCommand:skylight.activate"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "skylight.helloWorld",
-        "title": "Hello World"
+        "command": "skylight.activate",
+        "title": "Activate skylight"
+      },
+      {
+        "command": "skylight.deactivate",
+        "title": "Deactivate skylight"
+      },
+      {
+        "command": "skylight.toggle",
+        "title": "Toggle skylight"
       }
     ]
   },
