@@ -1,8 +1,8 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { LightSensor } from '@nodert-win10-19h1/windows.devices.sensors';
 import { CronJob } from 'cron';
+import { LightSensor } from '@nodert-win10-19h1/windows.devices.sensors';
 
 class IlluminanceWatcher {
     interval: number = 1000;
@@ -20,6 +20,7 @@ class IlluminanceWatcher {
 
         this.checkIlluminance();
     }
+
     destructor() {
         this.disable();
     }
@@ -34,7 +35,7 @@ class IlluminanceWatcher {
     disable() {
         if (this.job.running) {
             this.job.stop();
-            this.statusBarItem.text = `Skylight: -`;
+            this.statusBarItem.text = `$(lightbulb): -`;
             this.statusBarItem.show();
             vscode.window.showInformationMessage(`Skylight deactivated`);
         }
@@ -49,8 +50,8 @@ class IlluminanceWatcher {
     }
 
     checkIlluminance() {
-        let reading:number = this.sensor.getCurrentReading().illuminanceInLux;
-        this.statusBarItem.text = `Skylight: ${reading.toFixed(2)}`;
+        let reading: number = this.sensor.getCurrentReading().illuminanceInLux;
+        this.statusBarItem.text = `$(lightbulb): ${reading.toFixed(2)} Lux`;
         this.statusBarItem.show();
         if (reading > 100) {
             // use light theme
@@ -65,6 +66,9 @@ let watcher: IlluminanceWatcher | null = null;
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+
+    // let configuration = vscode.workspace.getConfiguration();
+    // let lightTheme = configuration.get();
 
     // Use the console to output diagnostic information (console.log) and errors (console.error)
     // This line of code will only be executed once when your extension is activated
