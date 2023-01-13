@@ -9,25 +9,26 @@ class IlluminanceWatcher {
     job: CronJob;
     statusBarItem: vscode.StatusBarItem;
 
+    theme: string;
     smoothExponent: () => number;
     lightTheme: () => string;
     darkTheme: () => string;
     upperThreshold: () => number;
     lowerThreshold: () => number;
-    setTheme: (theme: string) => void;
+    setTheme: (newTheme: string) => void;
 
     constructor(context: vscode.ExtensionContext) {
         let configuration = vscode.workspace.getConfiguration();
 
         let cronExpr = configuration.get("skylight.cron", "* * * * * *");
 
-        let defaultTheme: string = configuration.get("workbench.colorTheme", "");
-        this.lightTheme = () => configuration.get("skylight.lightTheme", defaultTheme);
-        this.darkTheme = () => configuration.get("skylight.darkTheme", defaultTheme);
+        this.theme = configuration.get("workbench.colorTheme", "");
+        this.lightTheme = () => configuration.get("skylight.lightTheme", this.theme);
+        this.darkTheme = () => configuration.get("skylight.darkTheme", this.theme);
         this.upperThreshold = () => configuration.get("skylight.upperThreshold", 1000);
         this.lowerThreshold = () => configuration.get("skylight.lowerThreshold", 200);
         this.smoothExponent = () => configuration.get("skylight.smoothExponent", 0.5);
-        this.setTheme = (theme: string) => configuration.update("workbench.colorTheme", theme);
+        this.setTheme = (newTheme: string) => { if (newTheme !== this.theme) { configuration.update("workbench.colorTheme", newTheme, true); } };
 
         this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
         context.subscriptions.push(this.statusBarItem);
@@ -53,7 +54,7 @@ class IlluminanceWatcher {
     disable() {
         if (this.job.running) {
             this.job.stop();
-            this.statusBarItem.text = `$(lightbulb): -`;
+            this.statusBarItem.text = `$(lightbulb): ${vscode.workspace.getConfiguration().get("workbench.colorTheme", "-")}`;
             this.statusBarItem.show();
             vscode.window.showInformationMessage(`Skylight deactivated`);
         }
