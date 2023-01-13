@@ -1,5 +1,10 @@
 {
     "name": "skylight",
+    "author": {
+        "name": "HamiltonHuaji",
+        "url": "https://github.com/HamiltonHuaji"
+    },
+    "license": "WTFPL",
     "displayName": "SkyLight",
     "description": "Automatically adjusts the color theme based on light sensor readings. (Currently windows 10+ only)",
     "repository": {
