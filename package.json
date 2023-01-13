@@ -1,7 +1,7 @@
 {
     "name": "skylight",
     "displayName": "SkyLight",
-    "description": "Automatically adjust theme based on light sensor.(Currently windows only)",
+    "description": "Automatically adjusts the color theme based on light sensor readings. (Currently windows 10+ only)",
     "repository": {
         "type": "git",
         "url": "https://github.com/HamiltonHuaji/skylight.git"
@@ -42,7 +42,8 @@
             "properties": {
                 "skylight.cron": {
                     "type": "string",
-                    "default": "* * * * * *",
+                    "default": "*/30 * * * * *",
+                    "scope": "machine",
                     "description": "The crontab expression checking the luminosity."
                 },
                 "skylight.upperThreshold": {

@@ -1,71 +1,29 @@
-# skylight README
-
-This is the README for your extension "skylight". After writing up a brief description, we recommend including the following sections.
+# SkyLight
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+This extension automatically adjusts the color theme based on light sensor readings.
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+Currently this extension only supports windows 10 19H1 or later.
+
+You must have a light sensor connected to your computer.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+The themes used in bright and dark environments will be retrieved from `workbench.preferredLightColorTheme` and `workbench.preferredDarkColorTheme`.
 
-For example:
+If the reading in Lux of your light sensor is greater than `skylight.upperThreshold`, the theme will be set to `workbench.preferredLightColorTheme`. If the reading in Lux of your light sensor is less than `skylight.lowerThreshold`, the theme will be set to `workbench.preferredDarkColorTheme`.
 
-This extension contributes the following settings:
+`skylight.upperThreshold` should be greater than `skylight.lowerThreshold`.
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+Make sure to turn off `window.autoDetectColorScheme` and `window.autoDetectHighContrast`.
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+### 0.0.1
 
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+Just a prototype.

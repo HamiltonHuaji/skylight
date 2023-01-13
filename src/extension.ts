@@ -9,6 +9,7 @@ class IlluminanceWatcher {
     job: CronJob;
     statusBarItem: vscode.StatusBarItem;
 
+    oldTheme: string | null = null;
     smoothExponent: () => number;
     lightTheme: () => string;
     darkTheme: () => string;
@@ -28,7 +29,7 @@ class IlluminanceWatcher {
         this.lowerThreshold = () => configuration.get("skylight.lowerThreshold", 200);
         this.smoothExponent = () => configuration.get("skylight.smoothExponent", 0.5);
         this.autoDetectColorScheme = () => configuration.get("window.autoDetectColorScheme", false) || configuration.get("window.autoDetectHighContrast", false);
-        this.setTheme = (newTheme: string) => { if (newTheme !== configuration.get("workbench.colorTheme", "")) { configuration.update("workbench.colorTheme", newTheme, true); } };
+        this.setTheme = (newTheme: string) => { if (newTheme !== this.oldTheme) { configuration.update("workbench.colorTheme", newTheme, true); this.oldTheme = newTheme; } };
 
         this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
         context.subscriptions.push(this.statusBarItem);
@@ -76,6 +77,12 @@ class IlluminanceWatcher {
 
     checkIlluminance() {
         let reading: number = this.sensor.getCurrentReading().illuminanceInLux;
+        if (this.smooth === null) {
+            this.smooth = reading;
+        }
+        let a = this.smoothExponent();
+        this.smooth = a * this.smooth + (1 - a) * reading;
+
         let upper = this.upperThreshold();
         let lower = this.lowerThreshold();
         let light = this.lightTheme();
@@ -84,15 +91,9 @@ class IlluminanceWatcher {
             this.statusBarItem.backgroundColor = new vscode.ThemeColor("statusBarItem.warningBackground");
             this.statusBarItem.text = `$(lightbulb): Configuration needed.`;
         } else {
-            this.statusBarItem.text = `$(lightbulb): ${reading.toFixed(2)} Lux`;
+            this.statusBarItem.text = `$(lightbulb): ${this.smooth.toFixed(2)} Lux`;
         }
         this.statusBarItem.show();
-
-        if (this.smooth === null) {
-            this.smooth = reading;
-        }
-        let a = this.smoothExponent();
-        this.smooth = a * this.smooth + (1 - a) * reading;
 
         if (this.smooth > upper && light !== "") {
             // use light theme
