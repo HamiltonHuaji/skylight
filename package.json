@@ -40,15 +40,20 @@
         "configuration": {
             "title": "SkyLight",
             "properties": {
+                "skylight.cron": {
+                    "type": "string",
+                    "default": "* * * * * *",
+                    "description": "The crontab expression checking the luminosity."
+                },
                 "skylight.lightTheme": {
-                    "type": ["string", "null"],
-                    "default": null,
-                    "description": "The color theme used in bright environments."
+                    "type": "string",
+                    "default": "",
+                    "description": "ID of the color theme used in bright environments."
                 },
                 "skylight.darkTheme": {
-                    "type": ["string", "null"],
-                    "default": null,
-                    "description": "The color theme used in dark environments."
+                    "type": "string",
+                    "default": "",
+                    "description": "ID of the color theme used in dark environments."
                 },
                 "skylight.upperThreshold": {
                     "type": "number",
@@ -61,6 +66,12 @@
                     "default": 200,
                     "scope": "machine",
                     "description": "The illumination threshold in Lux when switching to dark theme."
+                },
+                "skylight.smoothExponent": {
+                    "type": "number",
+                    "default": 0.5,
+                    "scope": "machine",
+                    "description": "The illumination smooth exponent, i.e. smooth=smooth*smoothExponent+newReading*(1-smoothExponent)."
                 }
             }
         }

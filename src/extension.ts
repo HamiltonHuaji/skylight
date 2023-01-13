@@ -5,16 +5,34 @@ import { CronJob } from 'cron';
 import { LightSensor } from '@nodert-win10-19h1/windows.devices.sensors';
 
 class IlluminanceWatcher {
-    interval: number = 1000;
     sensor: any = LightSensor.getDefault();
     job: CronJob;
     statusBarItem: vscode.StatusBarItem;
 
+    smoothExponent: () => number;
+    lightTheme: () => string;
+    darkTheme: () => string;
+    upperThreshold: () => number;
+    lowerThreshold: () => number;
+    setTheme: (theme: string) => void;
+
     constructor(context: vscode.ExtensionContext) {
+        let configuration = vscode.workspace.getConfiguration();
+
+        let cronExpr = configuration.get("skylight.cron", "* * * * * *");
+
+        let defaultTheme: string = configuration.get("workbench.colorTheme", "");
+        this.lightTheme = () => configuration.get("skylight.lightTheme", defaultTheme);
+        this.darkTheme = () => configuration.get("skylight.darkTheme", defaultTheme);
+        this.upperThreshold = () => configuration.get("skylight.upperThreshold", 1000);
+        this.lowerThreshold = () => configuration.get("skylight.lowerThreshold", 200);
+        this.smoothExponent = () => configuration.get("skylight.smoothExponent", 0.5);
+        this.setTheme = (theme: string) => configuration.update("workbench.colorTheme", theme);
+
         this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
         context.subscriptions.push(this.statusBarItem);
 
-        this.job = new CronJob('* * * * *', () => {
+        this.job = new CronJob(cronExpr, () => {
             this.checkIlluminance();
         }, null, false);
 
@@ -49,14 +67,34 @@ class IlluminanceWatcher {
         }
     }
 
+    smooth: number | null = null;
+
     checkIlluminance() {
         let reading: number = this.sensor.getCurrentReading().illuminanceInLux;
-        this.statusBarItem.text = `$(lightbulb): ${reading.toFixed(2)} Lux`;
-        this.statusBarItem.show();
-        if (reading > 100) {
-            // use light theme
+        let upper = this.upperThreshold();
+        let lower = this.lowerThreshold();
+        let light = this.lightTheme();
+        let dark = this.darkTheme();
+        if (upper <= lower || light === dark) {
+            this.statusBarItem.backgroundColor = new vscode.ThemeColor("statusBarItem.warningBackground");
+            this.statusBarItem.text = `$(lightbulb): Configuration needed.`;
         } else {
+            this.statusBarItem.text = `$(lightbulb): ${reading.toFixed(2)} Lux`;
+        }
+        this.statusBarItem.show();
+
+        if (this.smooth === null) {
+            this.smooth = reading;
+        }
+        let a = this.smoothExponent();
+        this.smooth = a * this.smooth + (1 - a) * reading;
+
+        if (this.smooth > upper && light !== "") {
+            // use light theme
+            this.setTheme(light);
+        } else if (this.smooth < lower && dark !== "") {
             // use dark theme
+            this.setTheme(dark);
         }
     }
 }
@@ -67,19 +105,9 @@ let watcher: IlluminanceWatcher | null = null;
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-    // let configuration = vscode.workspace.getConfiguration();
-    // let lightTheme = configuration.get();
-
-    // Use the console to output diagnostic information (console.log) and errors (console.error)
-    // This line of code will only be executed once when your extension is activated
-    // console.log('Congratulations, your extension "skylight" is now active!');
-
     watcher = new IlluminanceWatcher(context);
     watcher.enable();
 
-    // The command has been defined in the package.json file
-    // Now provide the implementation of the command with registerCommand
-    // The commandId parameter must match the command field in package.json
     const activateCommandId = 'skylight.activate';
     const deactivateCommandId = 'skylight.deactivate';
     const toggleCommandId = 'skylight.toggle';
