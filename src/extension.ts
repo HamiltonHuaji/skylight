@@ -22,9 +22,9 @@ class IlluminanceWatcher {
 
         let cronExpr = configuration.get("skylight.cron", "* * * * * *");
 
-        this.theme = configuration.get("workbench.colorTheme", "");
-        this.lightTheme = () => configuration.get("skylight.lightTheme", this.theme);
-        this.darkTheme = () => configuration.get("skylight.darkTheme", this.theme);
+        let defaultTheme = this.theme = configuration.get("workbench.colorTheme", "");
+        this.lightTheme = () => configuration.get("skylight.lightTheme", defaultTheme);
+        this.darkTheme = () => configuration.get("skylight.darkTheme", defaultTheme);
         this.upperThreshold = () => configuration.get("skylight.upperThreshold", 1000);
         this.lowerThreshold = () => configuration.get("skylight.lowerThreshold", 200);
         this.smoothExponent = () => configuration.get("skylight.smoothExponent", 0.5);
