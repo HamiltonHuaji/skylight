@@ -17,12 +17,12 @@ class IlluminanceWatcher {
     }
     destructor() {
         this.disable();
-        this.statusBarItem.hide();
     }
 
     enable() {
         if (this.handler === null) {
             this.handler = setInterval(this.checkIlluminance, this.interval);
+            vscode.window.showInformationMessage(`Activated skylight`);
         }
     }
 
@@ -30,13 +30,14 @@ class IlluminanceWatcher {
         if (this.handler !== null) {
             clearInterval(this.handler);
             this.sensor.text = `-`;
+            this.handler = null;
+            vscode.window.showInformationMessage(`Deactivated skylight`);
         }
     }
 
     checkIlluminance() {
         let reading = this.sensor.getCurrentReading().illuminanceInLux;
-        this.statusBarItem.text = `${reading}`;
-        vscode.window.showInformationMessage(this.sensor.getCurrentReading().illuminanceInLux.toString());
+        this.statusBarItem.text = `${reading.toString()}`;
         if (reading > 100) {
             // use light theme
         } else {
@@ -64,8 +65,8 @@ export function activate(context: vscode.ExtensionContext) {
     const deactivateCommandId = 'skylight.deactivate';
     const toggleCommandId = 'skylight.toggle';
 
-    let activateCommand = vscode.commands.registerCommand(activateCommandId, watcher.enable);
-    let deactivateCommand = vscode.commands.registerCommand(deactivateCommandId, watcher.disable);
+    let activateCommand = vscode.commands.registerCommand(activateCommandId, () => watcher?.enable());
+    let deactivateCommand = vscode.commands.registerCommand(deactivateCommandId, () => watcher?.disable());
     let toggleCommand = vscode.commands.registerCommand(toggleCommandId, () => {
         if (watcher?.handler !== null) {
             watcher?.disable();
