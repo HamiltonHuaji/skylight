@@ -19,7 +19,6 @@ class IlluminanceWatcher {
         }, null, false);
 
         this.checkIlluminance();
-        this.statusBarItem.show();
     }
     destructor() {
         this.disable();
@@ -28,14 +27,16 @@ class IlluminanceWatcher {
     enable() {
         if (!this.job.running) {
             this.job.start();
-            vscode.window.showInformationMessage(`Activated skylight`);
+            vscode.window.showInformationMessage(`Skylight activated`);
         }
     }
 
     disable() {
         if (this.job.running) {
             this.job.stop();
-            vscode.window.showInformationMessage(`Deactivated skylight`);
+            this.statusBarItem.text = `Skylight: -`;
+            this.statusBarItem.show();
+            vscode.window.showInformationMessage(`Skylight deactivated`);
         }
     }
 
@@ -48,10 +49,9 @@ class IlluminanceWatcher {
     }
 
     checkIlluminance() {
-        let reading = this.sensor.getCurrentReading().illuminanceInLux;
-        this.statusBarItem.text = `${reading}`;
+        let reading:number = this.sensor.getCurrentReading().illuminanceInLux;
+        this.statusBarItem.text = `Skylight: ${reading.toFixed(2)}`;
         this.statusBarItem.show();
-        vscode.window.showInformationMessage(`Skylight: ${reading}`);
         if (reading > 100) {
             // use light theme
         } else {

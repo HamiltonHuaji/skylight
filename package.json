@@ -10,7 +10,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:skylight.activate"
+    "onStartupFinished"
   ],
   "main": "./out/extension.js",
   "contributes": {
