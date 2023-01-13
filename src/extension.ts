@@ -3,20 +3,49 @@
 import * as vscode from 'vscode';
 import { LightSensor } from '@nodert-win10-19h1/windows.devices.sensors';
 
+class IlluminanceWatcher {
+    interval: number = 1000;
+    sensor: any = LightSensor.getDefault();
+    handler: NodeJS.Timer | null = null;
+    statusBarItem: vscode.StatusBarItem;
 
-function checkIlluminance(sensor: LightSensor) {
-    let reading = sensor.getCurrentReading().illuminanceInLux;
-    vscode.window.showInformationMessage(sensor.getCurrentReading().illuminanceInLux.toString());
-    if (reading > 100) {
-        // use light theme
-    } else {
-        // use dark theme
+    constructor(context: vscode.ExtensionContext) {
+        this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+        context.subscriptions.push(this.statusBarItem);
+        this.checkIlluminance();
+        this.statusBarItem.show();
+    }
+    destructor() {
+        this.disable();
+        this.statusBarItem.hide();
+    }
+
+    enable() {
+        if (this.handler === null) {
+            this.handler = setInterval(this.checkIlluminance, this.interval);
+        }
+    }
+
+    disable() {
+        if (this.handler !== null) {
+            clearInterval(this.handler);
+            this.sensor.text = `-`;
+        }
+    }
+
+    checkIlluminance() {
+        let reading = this.sensor.getCurrentReading().illuminanceInLux;
+        this.statusBarItem.text = `${reading}`;
+        vscode.window.showInformationMessage(this.sensor.getCurrentReading().illuminanceInLux.toString());
+        if (reading > 100) {
+            // use light theme
+        } else {
+            // use dark theme
+        }
     }
 }
 
-let interval: number = 1000;
-let sensor = LightSensor.getDefault();
-let handler: NodeJS.Timer | null = null;
+let watcher: IlluminanceWatcher | null = null;
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -26,6 +55,8 @@ export function activate(context: vscode.ExtensionContext) {
     // This line of code will only be executed once when your extension is activated
     // console.log('Congratulations, your extension "skylight" is now active!');
 
+    watcher = new IlluminanceWatcher(context);
+
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with registerCommand
     // The commandId parameter must match the command field in package.json
@@ -33,31 +64,13 @@ export function activate(context: vscode.ExtensionContext) {
     const deactivateCommandId = 'skylight.deactivate';
     const toggleCommandId = 'skylight.toggle';
 
-    let activateCommand = vscode.commands.registerCommand(activateCommandId, () => {
-        // The code you place here will be executed every time your command is executed
-        // Display a message box to the user
-        handler = setInterval(() => {
-            checkIlluminance(sensor);
-        }, interval);
-    });
-    let deactivateCommand = vscode.commands.registerCommand(deactivateCommandId, () => {
-        // The code you place here will be executed every time your command is executed
-        // Display a message box to the user
-        if (handler !== null) {
-            clearInterval(handler);
-            handler = null;
-        }
-    });
+    let activateCommand = vscode.commands.registerCommand(activateCommandId, watcher.enable);
+    let deactivateCommand = vscode.commands.registerCommand(deactivateCommandId, watcher.disable);
     let toggleCommand = vscode.commands.registerCommand(toggleCommandId, () => {
-        // The code you place here will be executed every time your command is executed
-        // Display a message box to the user
-        if (handler !== null) {
-            clearInterval(handler);
-            handler = null;
+        if (watcher?.handler !== null) {
+            watcher?.disable();
         } else {
-            handler = setInterval(() => {
-                checkIlluminance(sensor);
-            }, interval);
+            watcher?.enable();
         }
     });
 
@@ -65,15 +78,11 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(deactivateCommand);
     context.subscriptions.push(toggleCommand);
 
-    let statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-    statusBarItem.command = toggleCommandId;
-    context.subscriptions.push(statusBarItem);
+    watcher.statusBarItem.command = toggleCommandId;
 }
 
 // This method is called when your extension is deactivated
 export function deactivate() {
-    if (handler !== null) {
-        clearInterval(handler);
-        handler = null;
-    }
+    watcher?.destructor();
+    watcher = null;
 }
