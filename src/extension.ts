@@ -9,26 +9,26 @@ class IlluminanceWatcher {
     job: CronJob;
     statusBarItem: vscode.StatusBarItem;
 
-    theme: string;
     smoothExponent: () => number;
     lightTheme: () => string;
     darkTheme: () => string;
     upperThreshold: () => number;
     lowerThreshold: () => number;
     setTheme: (newTheme: string) => void;
+    autoDetectColorScheme: () => boolean;
 
     constructor(context: vscode.ExtensionContext) {
         let configuration = vscode.workspace.getConfiguration();
 
         let cronExpr = configuration.get("skylight.cron", "* * * * * *");
 
-        let defaultTheme = this.theme = configuration.get("workbench.colorTheme", "");
-        this.lightTheme = () => configuration.get("skylight.lightTheme", defaultTheme);
-        this.darkTheme = () => configuration.get("skylight.darkTheme", defaultTheme);
+        this.lightTheme = () => configuration.get("workbench.preferredLightColorTheme", "");
+        this.darkTheme = () => configuration.get("workbench.preferredDarkColorTheme", "");
         this.upperThreshold = () => configuration.get("skylight.upperThreshold", 1000);
         this.lowerThreshold = () => configuration.get("skylight.lowerThreshold", 200);
         this.smoothExponent = () => configuration.get("skylight.smoothExponent", 0.5);
-        this.setTheme = (newTheme: string) => { if (newTheme !== this.theme) { configuration.update("workbench.colorTheme", newTheme, true); } };
+        this.autoDetectColorScheme = () => configuration.get("window.autoDetectColorScheme", false) || configuration.get("window.autoDetectHighContrast", false);
+        this.setTheme = (newTheme: string) => { if (newTheme !== configuration.get("workbench.colorTheme", "")) { configuration.update("workbench.colorTheme", newTheme, true); } };
 
         this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
         context.subscriptions.push(this.statusBarItem);
@@ -46,6 +46,10 @@ class IlluminanceWatcher {
 
     enable() {
         if (!this.job.running) {
+            if (this.autoDetectColorScheme()) {
+                vscode.window.showInformationMessage(`Please set window.autoDetectColorScheme and window.autoDetectHighContrast to false to activate SkyLight.`);
+                return;
+            }
             this.job.start();
             vscode.window.showInformationMessage(`Skylight activated`);
         }
@@ -54,7 +58,7 @@ class IlluminanceWatcher {
     disable() {
         if (this.job.running) {
             this.job.stop();
-            this.statusBarItem.text = `$(lightbulb): ${vscode.workspace.getConfiguration().get("workbench.colorTheme", "-")}`;
+            this.statusBarItem.text = `$(lightbulb): -`;
             this.statusBarItem.show();
             vscode.window.showInformationMessage(`Skylight deactivated`);
         }

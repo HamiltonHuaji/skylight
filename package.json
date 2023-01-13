@@ -45,16 +45,6 @@
                     "default": "* * * * * *",
                     "description": "The crontab expression checking the luminosity."
                 },
-                "skylight.lightTheme": {
-                    "type": "string",
-                    "default": "",
-                    "description": "ID of the color theme used in bright environments."
-                },
-                "skylight.darkTheme": {
-                    "type": "string",
-                    "default": "",
-                    "description": "ID of the color theme used in dark environments."
-                },
                 "skylight.upperThreshold": {
                     "type": "number",
                     "default": 1000,
